@@ -8,7 +8,7 @@ Output: .war artifact built with Maven.
 
 Launch:
 
-Artifact can bo deployed remotely on any native server that supports Tomcat by copying the WAR file
+Artifact can be deployed remotely on any native server that supports Tomcat by copying the WAR file
 
 Interaction with the service is implemented via API calls. 
 Postman API collection can be found in root directory (LittleBanker.postman_collection.json) file. 
