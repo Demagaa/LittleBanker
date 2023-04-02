@@ -1,6 +1,7 @@
 # LittleBanker
 
 This project is created in terms of interviewing process at ZENTITY a.s. The REST API service helps user to manage the customers, accounts and transactions of simplified bank model.
+
 Technologies: Java 17, Spring MVC, JDBC, Maven, Docker
 
 Output: .war artifact built with Maven.
@@ -18,7 +19,7 @@ Database is dockerized, just run compose command in db-docker folder, this will 
 
 `docker compose up`
 
-Alternatively you can run .sql cript located in db-docker/init folder and configure DB on your local server. 
+Alternatively you can run .sql script located in db-docker/init folder and configure DB on your local server. 
 Connectivity setting can be adjusted application.properties file (localhost:3308 and root account used by default).
 
 Project status: improving stage
