@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+
+  mysql-development:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: littlebanker
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: littlebanker
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d
