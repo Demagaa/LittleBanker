@@ -1,6 +1,6 @@
 # LittleBanker
 
-This project is created in terms of interviewing process at ZENTITY a.s. The REST API service helps user to manage the customers, accounts and transactions of simplified bank model.
+This REST API service helps user to manage the customers, accounts and transactions of simplified bank model.
 
 Technologies: Java 17, Spring MVC, JDBC, Maven, Docker
 
