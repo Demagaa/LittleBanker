@@ -32,10 +32,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "iban=CZ2345678901234567890123\r\ncustomerid=1\r\ncurrency=eur",
+							"raw": "{\r\n    \"iban\" : \"CZ2345678901234567890124\",\r\n    \"customerId\" : 2,\r\n    \"balance\" : 500.0,\r\n    \"currency\" : \"eur\"\r\n}",
 							"options": {
 								"raw": {
-									"language": "text"
+									"language": "json"
 								}
 							}
 						},
@@ -60,7 +60,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/accounts/summary/?iban=CZ7308000000192000145391",
+							"raw": "http://localhost:8080/accounts/summary/CZ2345678901234567890124",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -69,13 +69,7 @@
 							"path": [
 								"accounts",
 								"summary",
-								""
-							],
-							"query": [
-								{
-									"key": "iban",
-									"value": "CZ7308000000192000145391"
-								}
+								"CZ2345678901234567890124"
 							]
 						}
 					},
@@ -88,7 +82,12 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "iban=CZ2345678901234567890123\r\ncustomerid=1\r\namount=500.0\r\ncurrency=eur"
+							"raw": "{\r\n    \"iban\" : \"CZ2345678901234567890124\",\r\n    \"customerId\" : 1,\r\n    \"balance\" : 520.0,\r\n    \"currency\" : \"eur\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "http://localhost:8080/accounts/update/",
@@ -158,7 +157,12 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "name=Bob\r\nsurname=Mob"
+							"raw": "{\r\n    \"name\" : \"Ivan\",\r\n    \"surname\" : \"Ivanov\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "http://localhost:8080/customers/",
@@ -182,10 +186,15 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "id=1\r\nname=Ivan\r\nsurname=Ivanov"
+							"raw": "{\r\n    \"name\" : \"Ivan\",\r\n    \"surname\" : \"Ivanov\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/customers/update/",
+							"raw": "http://localhost:8080/customers/update/2",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -194,7 +203,7 @@
 							"path": [
 								"customers",
 								"update",
-								""
+								"2"
 							]
 						}
 					},
@@ -212,7 +221,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/customers/delete/?id=4",
+							"raw": "http://localhost:8080/customers/delete/66",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -221,13 +230,7 @@
 							"path": [
 								"customers",
 								"delete",
-								""
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "4"
-								}
+								"66"
 							]
 						}
 					},
@@ -245,7 +248,12 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "debtoriban=CZ7208000000192000145393\r\ncreditoriban=DE02430609674015142043SFTPOJH\r\namount=340\r\nmessage=Hello"
+							"raw": "{\r\n    \"debtorIban\" : \"CZ7208000000192000145393\",\r\n    \"creditorIban\" : \"DE02430609674015142043SFTPOJH\",\r\n    \"amount\" : 1,\r\n    \"message\" : \"Hello\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "http://localhost:8080/transactions/",
@@ -268,7 +276,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/transactions/history/?iban=CZ7208000000192000145393",
+							"raw": "http://localhost:8080/transactions/history/CZ7208000000192000145393",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -277,13 +285,7 @@
 							"path": [
 								"transactions",
 								"history",
-								""
-							],
-							"query": [
-								{
-									"key": "iban",
-									"value": "CZ7208000000192000145393"
-								}
+								"CZ7208000000192000145393"
 							]
 						}
 					},
@@ -295,7 +297,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/transactions/search/amount/?amount=340",
+							"raw": "http://localhost:8080/transactions/search/amount/?amount=1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -315,7 +317,7 @@
 								},
 								{
 									"key": "amount",
-									"value": "340"
+									"value": "1"
 								}
 							]
 						}
@@ -328,7 +330,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/transactions/search/message/?message=Electricity bill",
+							"raw": "http://localhost:8080/transactions/search/message/?message=Hello",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -343,7 +345,7 @@
 							"query": [
 								{
 									"key": "message",
-									"value": "Electricity bill"
+									"value": "Hello"
 								}
 							]
 						}

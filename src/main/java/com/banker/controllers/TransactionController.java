@@ -1,12 +1,14 @@
 package com.banker.controllers;
 
-import com.banker.dao.TransactionDAO;
+import com.banker.dao.TransactionService;
+import com.banker.models.Transfer;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * @author Aleksei Chursin
@@ -15,53 +17,37 @@ import java.util.Properties;
 @RequestMapping("/transactions")
 public class TransactionController {
 
-    private final TransactionDAO transactionDAO; // Data access object //
+    private final TransactionService transactionService; // Data access object //
 
-    public TransactionController(TransactionDAO transactionDAO) {
-        this.transactionDAO = transactionDAO;
+    public TransactionController(TransactionService transactionService) {
+        this.transactionService = transactionService;
     }
 
-    @PostMapping(value = "/", consumes = {"text/plain"}, produces = {"text/plain"}) // Spring REST annotation //
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public String transferCredits(@RequestBody String r) {
-        Properties properties = transactionDAO.parsePropertiesString(r); // Parsing string data //
-
-        return "Remaining balance: " + (transactionDAO.transferCredits(properties.getProperty("debtoriban"),
-                properties.getProperty("creditoriban"),
-                BigDecimal.valueOf(Double.parseDouble(properties.getProperty("amount"))),
-                properties.getProperty("message")));
+    @PostMapping(value = "/",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE) // Spring REST annotation //
+    public ResponseEntity transferCredits(@RequestBody Transfer newTransfer) {
+        BigDecimal remainingBalance  = transactionService.transferCredits(newTransfer);
+        return new ResponseEntity("Remaining ballance: " + remainingBalance, HttpStatus.OK);
     }
 
-    @GetMapping("/history/") // Spring REST annotation //
-    @ResponseStatus(HttpStatus.OK)
-    public String viewHistoryByIban(@RequestParam String iban) {
-        List list = transactionDAO.viewHistory(iban);
-        String response = "";
-        for (int i = 0; i < list.size(); i++)
-            response += list.get(i).toString() + "\n" + "\n";
-        return response;
-
-
+    @GetMapping("/history/{iban}") // Spring REST annotation //
+    public ResponseEntity viewHistoryByIban(@PathVariable String iban) {
+        List list = transactionService.viewHistory(iban);
+        return new ResponseEntity(list, HttpStatus.OK);
     }
 
     @GetMapping("/search/message/") // Spring REST annotation //
-    @ResponseStatus(HttpStatus.OK)
-    public String searchByMessage(@RequestParam String message) {
-        List list = transactionDAO.search(message);
-        String response = "";
-        for (int i = 0; i < list.size(); i++)
-            response += list.get(i).toString() + "\n" + "\n";
-        return response;
+    public ResponseEntity searchByMessage(@RequestParam String message) {
+        List list = transactionService.search(message);
+        return new ResponseEntity(list, HttpStatus.OK);
     }
 
 
     @GetMapping("/search/amount/") // Spring REST annotation //
     @ResponseStatus(HttpStatus.OK)
-    public String searchByMessage(@RequestParam BigDecimal amount) {
-        List list = transactionDAO.search(amount);
-        String response = "";
-        for (int i = 0; i < list.size(); i++)
-            response += list.get(i).toString() + "\n" + "\n";
-        return response;
+    public ResponseEntity searchByMessage(@RequestParam BigDecimal amount) {
+        List list = transactionService.search(amount);
+        return new ResponseEntity(list, HttpStatus.OK);
     }
 }

@@ -1,13 +1,12 @@
 package com.banker.controllers;
 
-import com.banker.dao.AccountDAO;
+import com.banker.dao.AccountService;
 import com.banker.models.Account;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
-import java.util.Properties;
 
 /**
  * @author Aleksei Chursin
@@ -16,53 +15,42 @@ import java.util.Properties;
 @RestController
 @RequestMapping("/accounts")
 public class AccountController {
-    private final AccountDAO accountDAO; // Data access object //
+    private final AccountService accountService; // Data access object //
 
-    public AccountController(AccountDAO accountDAO) {
-        this.accountDAO = accountDAO;
+    public AccountController(AccountService accountService) {
+        this.accountService = accountService;
     }
 
-    @PostMapping(value = "/", consumes = {"text/plain"}, produces = {"text/plain"}) // Spring REST annotation //
-    @ResponseStatus(HttpStatus.CREATED)
-    public String createAccount(@RequestBody String r) {
-        Properties properties = accountDAO.parsePropertiesString(r); // Parsing string data //
-        Account newAccount = new Account();
-        newAccount.setIban(properties.getProperty("iban"));
-        newAccount.setCustomerId(Integer.parseInt(properties.getProperty("customerid")));
-        newAccount.setBalance(BigDecimal.valueOf(100.0));
-        newAccount.setCurrency(properties.getProperty("currency"));
-        accountDAO.save(newAccount);
-
-        return "Created account with following properties: " + r;
+    @PostMapping(value = "/",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE) // Spring REST annotation //
+    public ResponseEntity createAccount(@RequestBody Account newAccount) {
+        accountService.save(newAccount);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/delete/") // Spring REST annotation //
+    @DeleteMapping("/delete/{iban}") // Spring REST annotation //
     @ResponseStatus(HttpStatus.OK)
-    public void deleteAccount(@RequestParam String iban) {
-        if (!accountDAO.delete(iban))
+    public ResponseEntity deleteAccount(@PathVariable String iban) {
+        if (!accountService.delete(iban))
             throw new ErrorResponseException(HttpStatus.NOT_ACCEPTABLE);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
-    @GetMapping("/summary/") // Spring REST annotation //
-    @ResponseStatus(HttpStatus.OK)
-    public String getSummary(@RequestParam String iban) {
-        if (accountDAO.getSummary(iban) == null)
+    @GetMapping(value = "/summary/{iban}",
+            produces = MediaType.APPLICATION_JSON_VALUE) // Spring REST annotation //
+    public ResponseEntity getSummary(@PathVariable String iban) {
+        if (accountService.getSummary(iban) == null)
             throw new ErrorResponseException(HttpStatus.NOT_FOUND);
-        return accountDAO.getSummary(iban).toString();
+        return new ResponseEntity(accountService.getSummary(iban), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/update/", consumes = {"text/plain"}, produces = {"text/plain"}) // Spring REST annotation //
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public void updateAccount(@RequestBody String r) {
-        Properties properties = accountDAO.parsePropertiesString(r); // Parsing string data //
-        Account newAccount = new Account();
-        newAccount.setIban(properties.getProperty("iban"));
-        newAccount.setCustomerId(Integer.parseInt(properties.getProperty("customerid")));
-        newAccount.setBalance(BigDecimal.valueOf(Double.parseDouble(properties.getProperty("amount"))));
-        newAccount.setCurrency(properties.getProperty("currency"));
-        if (!accountDAO.update(newAccount))
-            throw new ErrorResponseException(HttpStatus.BAD_REQUEST);
-
+    @PostMapping(value = "/update/",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE) // Spring REST annotation //
+    public ResponseEntity updateAccount(@RequestBody Account account) {
+        accountService.update(account);
+        return new ResponseEntity(HttpStatus.OK);
     }
 }
 

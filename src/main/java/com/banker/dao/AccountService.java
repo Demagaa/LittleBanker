@@ -2,19 +2,18 @@ package com.banker.dao;
 
 import com.banker.models.Account;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.Properties;
 
 /**
  * @author Aleksei Chursin
  */
 @Component
-public class AccountDAO {
-    static DbUtil util = new DbUtil();
+@Transactional
+public class AccountService {
+    static DbUtilDAO util = new DbUtilDAO();
     private static final String URL = util.getConnectionUrl();
     private static final String USERNAME = util.getUserName();
     private static final String PASSWORD = util.getPassword();
@@ -22,7 +21,7 @@ public class AccountDAO {
     private static Connection connection;
 
     // Connecting to database //
-    static {
+    private void setConnection(){
         try {
             Class.forName(util.getDbDriver());
         } catch (ClassNotFoundException e) {
@@ -36,9 +35,19 @@ public class AccountDAO {
         }
     }
 
+    private void closeConnection(){
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
     // Methods for working with database data //
     public Account save(Account account) {
         try {
+            setConnection();
             PreparedStatement preparedStatement =
                     connection.prepareStatement("INSERT INTO account VALUES(?, ?, ?, ?)");
 
@@ -48,6 +57,7 @@ public class AccountDAO {
             preparedStatement.setString(4, account.getCurrency());
 
             preparedStatement.executeUpdate();
+            closeConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -58,6 +68,7 @@ public class AccountDAO {
         PreparedStatement preparedStatement;
 
         try {
+            setConnection();
             preparedStatement = connection.prepareStatement("DELETE FROM transfer WHERE debtoriban=? OR creditoriban=?");
 
             preparedStatement.setString(1, iban);
@@ -70,6 +81,7 @@ public class AccountDAO {
             preparedStatement.setString(1, iban);
 
             preparedStatement.executeUpdate();
+            closeConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return false;
@@ -79,6 +91,7 @@ public class AccountDAO {
 
     public boolean update(Account updatedAccount) {
         try {
+            setConnection();
             PreparedStatement preparedStatement =
                     connection.prepareStatement("UPDATE account SET customerid=?, balance=?, currency=? WHERE iban=?");
 
@@ -88,6 +101,8 @@ public class AccountDAO {
             preparedStatement.setString(4, updatedAccount.getIban());
 
             preparedStatement.executeUpdate();
+
+            closeConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return false;
@@ -97,12 +112,16 @@ public class AccountDAO {
 
     public void setBalance(BigDecimal balance, String iban) {
         try {
+            setConnection();
+
             PreparedStatement preparedStatement =
                     connection.prepareStatement("UPDATE account SET balance=? WHERE iban=?");
 
             preparedStatement.setBigDecimal(1, balance);
             preparedStatement.setString(2, iban);
             preparedStatement.executeUpdate();
+
+            closeConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -111,6 +130,8 @@ public class AccountDAO {
     public Account getSummary(String iban) {
         Account account = null;
         try {
+            setConnection();
+
             PreparedStatement preparedStatement =
                     connection.prepareStatement("SELECT customerid, balance, currency FROM account WHERE iban=?");
 
@@ -125,6 +146,7 @@ public class AccountDAO {
                 account.setCurrency(resultSet.getString(3));
             } else return null;
 
+            closeConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return null;
@@ -136,24 +158,17 @@ public class AccountDAO {
     // Assistant function for delete operation //
     public void deleteByCustomerId(int customerId) {
         try {
+            setConnection();
+
             PreparedStatement preparedStatement =
                     connection.prepareStatement("DELETE FROM account WHERE customerid=?");
 
             preparedStatement.setInt(1, customerId);
             preparedStatement.executeUpdate();
+
+            closeConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-    }
-
-    // Assistant function for parsing //
-    public Properties parsePropertiesString(String s) {
-        final Properties p = new Properties();
-        try {
-            p.load(new StringReader(s));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return p;
     }
 }

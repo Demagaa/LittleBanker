@@ -9,7 +9,7 @@ import java.util.Properties;
  */
 
 // POJO class for database connection //
-public class DbUtil {
+public class DbUtilDAO {
     public String getDbDriver() {
         return dbDriver;
     }
@@ -31,8 +31,8 @@ public class DbUtil {
     private static String userName;
     private static String password;
 
-    public DbUtil() {
-        InputStream inputStream = DbUtil.class.getClassLoader()
+    public DbUtilDAO() {
+        InputStream inputStream = DbUtilDAO.class.getClassLoader()
                 .getResourceAsStream("application.properties");
         Properties properties = new Properties();
         if (properties != null) {

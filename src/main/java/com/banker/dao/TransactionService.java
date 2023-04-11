@@ -3,22 +3,21 @@ package com.banker.dao;
 import com.banker.models.Account;
 import com.banker.models.Transfer;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * @author Aleksei Chursin
  */
 @Component
-public class TransactionDAO {
+@Transactional
+public class TransactionService {
 
-    static DbUtil util = new DbUtil();
+    static DbUtilDAO util = new DbUtilDAO();
     private static final String URL = util.getConnectionUrl();
     private static final String USERNAME = util.getUserName();
     private static final String PASSWORD = util.getPassword();
@@ -26,7 +25,7 @@ public class TransactionDAO {
     private static Connection connection;
 
     // Connecting to database //
-    static {
+    private void setConnection(){
         try {
             Class.forName(util.getDbDriver());
         } catch (ClassNotFoundException e) {
@@ -40,31 +39,39 @@ public class TransactionDAO {
         }
     }
 
+    private void closeConnection(){
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     // Methods for working with database data //
-    public BigDecimal transferCredits(String debtorIBAN, String creditorIBAN, BigDecimal amount, String message) {
+    public BigDecimal transferCredits(Transfer transfer) {
         double modifier = 1;
-        AccountDAO dao = new AccountDAO();
-        Account debtorAccount = dao.getSummary(debtorIBAN);
-        Account creditorAccount = dao.getSummary(creditorIBAN);
-        if (debtorAccount.getBalance().compareTo(amount) <= -1) {
+        AccountService dao = new AccountService();
+        Account debtorAccount = dao.getSummary(transfer.getDebtorIban());
+        Account creditorAccount = dao.getSummary(transfer.getCreditorIban());
+        if (debtorAccount.getBalance().compareTo(transfer.getAmount()) <= -1) {
             throw new RuntimeException("Insufficient balance");
         }
 
-        if (debtorAccount.getCurrency() != creditorAccount.getCurrency()) {
+        if (debtorAccount.getCurrency().equals(creditorAccount.getCurrency())) {
             if (!debtorAccount.getCurrency().equals("eur")) {
                 modifier = 0.04;
             } else modifier = 23.5;
         }
 
-        debtorAccount.setBalance(debtorAccount.getBalance().subtract(amount));
-        BigDecimal converted = amount.multiply(BigDecimal.valueOf(modifier));
+        debtorAccount.setBalance(debtorAccount.getBalance().subtract(transfer.getAmount()));
+        BigDecimal converted = transfer.getAmount().multiply(BigDecimal.valueOf(modifier));
         creditorAccount.setBalance(creditorAccount.getBalance().add(converted));
-        dao.setBalance(debtorAccount.getBalance(), debtorIBAN);
-        dao.setBalance(creditorAccount.getBalance(), creditorIBAN);
-
-        Transfer transfer = new Transfer(debtorIBAN, creditorIBAN, amount, message);
+        dao.setBalance(debtorAccount.getBalance(), transfer.getDebtorIban());
+        dao.setBalance(creditorAccount.getBalance(), transfer.getCreditorIban());
+;
         try {
+            setConnection();
             PreparedStatement preparedStatement =
                     connection.prepareStatement("INSERT INTO transfer " +
                             "(debtoriban, creditoriban, amount, message) VALUES(?, ?, ?, ?)");
@@ -73,8 +80,8 @@ public class TransactionDAO {
             preparedStatement.setString(2, transfer.getCreditorIban());
             preparedStatement.setBigDecimal(3, transfer.getAmount());
             preparedStatement.setString(4, transfer.getMessage());
-
             preparedStatement.executeUpdate();
+            closeConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return BigDecimal.valueOf(-1);
@@ -85,6 +92,7 @@ public class TransactionDAO {
     public List<Transfer> viewHistory(String debtorIBAN) {
         List<Transfer> list = new ArrayList<>();
         try {
+            setConnection();
             PreparedStatement preparedStatement =
                     connection.prepareStatement("SELECT * FROM transfer WHERE debtoriban=?");
 
@@ -94,7 +102,7 @@ public class TransactionDAO {
             while (resultSet.next()) {
                 list.add(new Transfer(debtorIBAN, resultSet.getString(3), resultSet.getBigDecimal(4), resultSet.getString(5)));
             }
-
+            closeConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -105,6 +113,7 @@ public class TransactionDAO {
     public List<Transfer> search(BigDecimal amount) {
         List<Transfer> list = new ArrayList<>();
         try {
+            setConnection();
             PreparedStatement preparedStatement =
                     connection.prepareStatement("SELECT * FROM transfer WHERE amount=?");
 
@@ -114,7 +123,7 @@ public class TransactionDAO {
             while (resultSet.next()) {
                 list.add(new Transfer(resultSet.getString(2), resultSet.getString(3), amount, resultSet.getString(5)));
             }
-
+            closeConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -124,6 +133,7 @@ public class TransactionDAO {
     public List<Transfer> search(String message) {
         List<Transfer> list = new ArrayList<>();
         try {
+            setConnection();
             PreparedStatement preparedStatement =
                     connection.prepareStatement("SELECT * FROM transfer WHERE message=?");
 
@@ -133,23 +143,10 @@ public class TransactionDAO {
             while (resultSet.next()) {
                 list.add(new Transfer(resultSet.getString(2), resultSet.getString(3), resultSet.getBigDecimal(4), message));
             }
-
+            closeConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
         return list;
     }
-
-    // Assistant function for parsing //
-    public Properties parsePropertiesString(String s) {
-        final Properties p = new Properties();
-        try {
-            p.load(new StringReader(s));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return p;
-    }
-
-
 }

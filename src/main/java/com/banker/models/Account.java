@@ -10,13 +10,16 @@ import java.math.BigDecimal;
 // POJO class for Account //
 
 public class Account {
+
     private String iban;
+
+    private int customerId;
 
     private String currency;
 
     private BigDecimal balance;
 
-    private int customerId;
+
 
     public int getCustomerId() {
         return customerId;

@@ -2,18 +2,17 @@ package com.banker.dao;
 
 import com.banker.models.Customer;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.sql.*;
-import java.util.Properties;
 
 /**
  * @author Aleksei Chursin
  */
 @Component
-public class CustomerDAO {
-    static DbUtil util = new DbUtil();
+@Transactional
+public class CustomerService {
+    static DbUtilDAO util = new DbUtilDAO();
     private static final String URL = util.getConnectionUrl();
     private static final String USERNAME = util.getUserName();
     private static final String PASSWORD = util.getPassword();
@@ -21,7 +20,7 @@ public class CustomerDAO {
     private static Connection connection;
 
     // Connecting to database //
-    static {
+    private void setConnection(){
         try {
             Class.forName(util.getDbDriver());
         } catch (ClassNotFoundException e) {
@@ -35,10 +34,21 @@ public class CustomerDAO {
         }
     }
 
+    private void closeConnection(){
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
     // Methods for working with database data //
 
     public Customer save(Customer customer) {
         try {
+            setConnection();
+
             PreparedStatement preparedStatement =
                     connection.prepareStatement("INSERT INTO customer (name,surname) VALUES( ?, ?)");
 
@@ -46,6 +56,8 @@ public class CustomerDAO {
             preparedStatement.setString(2, customer.getSurname());
 
             preparedStatement.executeUpdate();
+
+            closeConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return null;
@@ -54,13 +66,17 @@ public class CustomerDAO {
     }
     public boolean delete(int id) {
         PreparedStatement preparedStatement;
-        AccountDAO dao = new AccountDAO();
+        AccountService dao = new AccountService();
         dao.deleteByCustomerId(id);
         try {
+            setConnection();
+
             preparedStatement = connection.prepareStatement("DELETE FROM customer WHERE id=?");
             preparedStatement.setInt(1, id);
 
             preparedStatement.executeUpdate();
+
+            closeConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return false;
@@ -70,6 +86,8 @@ public class CustomerDAO {
 
     public boolean update (Customer updatedCustomer, int id) {
         try {
+            setConnection();
+
             PreparedStatement preparedStatement =
                     connection.prepareStatement("UPDATE customer SET name=?, surname=? WHERE id=?");
 
@@ -78,6 +96,8 @@ public class CustomerDAO {
             preparedStatement.setInt(3, id);
 
             preparedStatement.executeUpdate();
+
+            closeConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return false;
@@ -87,6 +107,8 @@ public class CustomerDAO {
 
     public int getId(Customer customer){
         try {
+            setConnection();
+
             PreparedStatement preparedStatement =
                     connection.prepareStatement("SELECT id FROM customer WHERE name=? AND surname=? ORDER BY id DESC LIMIT 1");
 
@@ -94,6 +116,8 @@ public class CustomerDAO {
             preparedStatement.setString(2, customer.getSurname());
 
             ResultSet resultSet = preparedStatement.executeQuery();
+
+            closeConnection();
             if (resultSet.next())
                 return resultSet.getInt(1);
 
@@ -107,6 +131,8 @@ public class CustomerDAO {
     public Customer getSummary(int id) {
         Customer customer = null;
         try {
+            setConnection();
+
             PreparedStatement preparedStatement =
                     connection.prepareStatement("SELECT id, name, surname FROM customer WHERE id=?");
 
@@ -119,6 +145,7 @@ public class CustomerDAO {
             customer.setName(resultSet.getString(2));
             customer.setSurname(resultSet.getString(3));
 
+            closeConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return null;
@@ -126,16 +153,4 @@ public class CustomerDAO {
 
         return customer;
     }
-
-    // Assistant function for parsing //
-    public Properties parsePropertiesString(String s) {
-        final Properties p = new Properties();
-        try {
-            p.load(new StringReader(s));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return p;
-    }
-
 }
