@@ -2,11 +2,15 @@
 
 This REST API service helps user to manage the customers, accounts and transactions of simplified bank model.
 
-Technologies: Java 17, Spring MVC, MySQL, Maven, Docker
+### Technologies 
 
-Output: .war artifact built with Maven.
+Java 17, Spring MVC, MySQL, Maven, Docker
 
-Launch:
+### Output: 
+
+.war artifact built with Maven.
+
+## Launch:
 
 Artifact can be deployed remotely on any native server that supports Tomcat by copying the WAR file
 
@@ -22,4 +26,6 @@ Database is dockerized, just run compose command in db-docker folder, this will 
 Alternatively you can run .sql script located in db-docker/init folder and configure DB on your local server. 
 Connectivity setting can be adjusted application.properties file (localhost:3308 and root account used by default).
 
-Project status: improving stage
+## Project status
+
+improving stage
