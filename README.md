@@ -2,7 +2,7 @@
 
 This REST API service helps user to manage the customers, accounts and transactions of simplified bank model.
 
-Technologies: Java 17, Spring MVC, JDBC, Maven, Docker
+Technologies: Java 17, Spring MVC, MySQL, Maven, Docker
 
 Output: .war artifact built with Maven.
 
