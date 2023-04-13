@@ -1,6 +1,10 @@
 package com.banker.models;
 
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+
 import java.math.BigDecimal;
 
 /**
@@ -10,10 +14,13 @@ import java.math.BigDecimal;
 // POJO class for Transfer //
 public class Transfer {
 
+    @Positive
     private BigDecimal amount;
 
+    @Size(min = 5, max = 34)
     private String debtorIban;
 
+    @Size(min = 5, max = 34)
     private String creditorIban;
 
     private String message;

@@ -1,6 +1,8 @@
 package com.banker.models;
 
 
+import jakarta.validation.constraints.*;
+
 import java.math.BigDecimal;
 
 /**
@@ -11,12 +13,17 @@ import java.math.BigDecimal;
 
 public class Account {
 
+    @Size(min = 5, max = 34)
     private String iban;
 
+    @Positive
     private int customerId;
 
+
+    @Size(min = 3, max = 3)
     private String currency;
 
+    @PositiveOrZero(message = "Balance can't be negative")
     private BigDecimal balance;
 
 

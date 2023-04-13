@@ -1,6 +1,10 @@
 package com.banker.models;
 
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+
 /**
  * @author Aleksei Chursin
  */
@@ -8,8 +12,10 @@ package com.banker.models;
 // POJO class for Customer //
 public class Customer {
 
+    @Size(min = 2)
     private String name;
 
+    @Size(min = 2)
     private String surname;
 
     private int id;

@@ -1,4 +1,4 @@
-package com.banker.dao;
+package com.banker.services;
 
 import com.banker.models.Account;
 import org.springframework.stereotype.Component;
@@ -45,7 +45,7 @@ public class AccountService {
 
 
     // Methods for working with database data //
-    public Account save(Account account) {
+    public boolean save(Account account) {
         try {
             setConnection();
             PreparedStatement preparedStatement =
@@ -60,8 +60,9 @@ public class AccountService {
             closeConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
+            return false;
         }
-        return account;
+        return true;
     }
 
     public boolean delete(String iban) {

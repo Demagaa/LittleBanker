@@ -1,4 +1,4 @@
-package com.banker.dao;
+package com.banker.services;
 
 import com.banker.models.Customer;
 import org.springframework.stereotype.Component;
@@ -45,7 +45,7 @@ public class CustomerService {
 
     // Methods for working with database data //
 
-    public Customer save(Customer customer) {
+    public void save(Customer customer) throws Exception {
         try {
             setConnection();
 
@@ -59,10 +59,8 @@ public class CustomerService {
 
             closeConnection();
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
-            return null;
+            throw new Exception("Error");
         }
-        return customer;
     }
     public boolean delete(int id) {
         PreparedStatement preparedStatement;
@@ -105,7 +103,7 @@ public class CustomerService {
         return true;
     }
 
-    public int getId(Customer customer){
+    public int getId(Customer customer) throws Exception {
         try {
             setConnection();
 
@@ -117,15 +115,13 @@ public class CustomerService {
 
             ResultSet resultSet = preparedStatement.executeQuery();
 
-            closeConnection();
             if (resultSet.next())
                 return resultSet.getInt(1);
-
+            closeConnection();
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
-            return -1;
+            throw new Exception("Error");
         }
-        return -1;
+        throw new Exception("Error");
     }
 
     public Customer getSummary(int id) {
